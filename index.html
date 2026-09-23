@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grow With Ayus</title>
+<style>
+:root{--g:#39ff14;--bg:#080808;--card:#141414}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:var(--bg);color:#fff}
+#splash{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:#080808;z-index:100}
+#app{display:none;padding:18px;padding-bottom:90px}
+.logo{text-align:center}
+.circle{width:90px;height:90px;border-radius:50%;background:var(--g);color:#000;display:flex;justify-content:center;align-items:center;font-size:42px;box-shadow:0 0 35px var(--g);animation:pulse 1.5s infinite;margin:auto}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.title{text-align:center;font-size:30px;font-weight:bold}.title span{color:var(--g)}
+.sub{text-align:center;color:#888;margin:6px 0 18px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid #222;border-radius:22px;padding:18px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.stats h2{color:var(--g)}
+.ring-wrap{display:flex;justify-content:center;margin-bottom:12px}
+svg{transform:rotate(-90deg)}
+.quest,.shop-item{display:flex;justify-content:space-between;align-items:center;background:#1f1f1f;padding:12px;border-radius:14px;margin-top:10px}
+button{background:var(--g);color:#000;border:none;padding:8px 14px;border-radius:10px;font-weight:bold}
+button:disabled{background:#444;color:#888}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:#1f1f1f;padding:10px;border-radius:10px;text-align:center;font-size:12px}
+.day.done{background:var(--g);color:#000}
+.avatar{width:80px;height:80px;border-radius:50%;background:var(--g);color:#000;display:flex;justify-content:center;align-items:center;font-size:34px;margin:auto}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#1f1f1f;color:#fff;margin-top:10px}
+.theme-row{display:flex;gap:8px;margin-top:12px}
+.theme-row button{flex:1}
+canvas{width:100%;height:140px;background:#111;border-radius:12px}
+nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:92%;max-width:430px;background:#151515;border:1px solid #222;border-radius:22px;padding:12px;display:flex;justify-content:space-around}
+.nav-item{text-align:center;color:#777;font-size:11px;cursor:pointer}
+.nav-item.active{color:var(--g)}
+.nav-item div{font-size:22px}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="logo">
+    <div class="circle">🌱</div>
+    <h1 style="margin-top:18px">Grow <span style="color:#39ff14">With Ayus</span></h1>
+    <p style="color:#888">Become Better Every Day</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="title">Grow <span>With Ayus</span></div>
+  <div class="sub">Become Better Every Day</div>
+
+  <!-- HOME -->
+  <div id="home" class="page active">
+    <div class="card">
+      <div class="ring-wrap">
+        <svg width="170" height="170">
+          <circle cx="85" cy="85" r="70" stroke="#222" stroke-width="12" fill="none"/>
+          <circle id="ring" cx="85" cy="85" r="70" stroke="#39ff14" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="440" stroke-dashoffset="440"/>
+          <text id="levelText" x="85" y="92" fill="white" text-anchor="middle" transform="rotate(90 85 85)" font-size="24">1</text>
+        </svg>
+      </div>
+
+      <div class="stats">
+        <div><h2 id="xp">0</h2><small>XP</small></div>
+        <div><h2 id="coins">0</h2><small>Coins</small></div>
+        <div><h2 id="streak">0</h2><small>🔥</small></div>
+      </div>
+
+      <p style="text-align:center;margin-top:12px"><span id="progressText">0</span>/100 XP</p>
+    </div>
+
+    <div class="card">
+      <h3>Today's Quests</h3>
+      <div class="quest"><span>📚 Study (+20)</span><button class="q" data-xp="20" data-coins="10">Done</button></div>
+      <div class="quest"><span>💪 Workout (+15)</span><button class="q" data-xp="15" data-coins="8">Done</button></div>
+      <div class="quest"><span>💧 Water (+5)</span><button class="q" data-xp="5" data-coins="2">Done</button></div>
+      <div class="quest"><span>📖 Read (+10)</span><button class="q" data-xp="10" data-coins="5">Done</button></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="stats" class="page">
+    <div class="card">
+      <h3>Weekly XP Graph</h3>
+      <canvas id="graph" width="320" height="140"></canvas>
+    </div>
+    <div class="card">
+      <h3>7-Day Streak</h3>
+      <div id="calendar" class="calendar"></div>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div id="shop" class="page">
+    <div class="card">
+      <h3>Coin Shop</h3>
+      <div class="shop-item"><span>🔥 Fire Theme (50)</span><button onclick="buy(50,'#ff5a1f')">Buy</button></div>
+      <div class="shop-item"><span>💎 Blue Theme (120)</span><button onclick="buy(120,'#00d9ff')">Buy</button></div>
+      <div class="shop-item"><span>👑 Gold Theme (250)</span><button onclick="buy(250,'#ffd700')">Buy</button></div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profile" class="page">
+    <div class="card" style="text-align:center">
+      <div id="avatar" class="avatar">A</div>
+      <h2 id="nameShow" style="margin-top:12px">Ayus</h2>
+
+      <input id="nameInput" placeholder="Change Username">
+      <button style="margin-top:10px" onclick="saveName()">Save</button>
+
+      <div style="margin-top:18px">
+        <p>Level: <span id="profileLevel">1</span></p>
+        <p>Total XP: <span id="profileXP">0</span></p>
+        <p>Coins: <span id="profileCoins">0</span></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Theme</h3>
+      <div class="theme-row">
+        <button onclick="theme('#39ff14')">Green</button>
+        <button onclick="theme('#00d9ff')">Blue</button>
+        <button onclick="theme('#b84dff')">Purple</button>
+      </div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-item active" data-page="home"><div>🏠</div>Home</div>
+    <div class="nav-item" data-page="stats"><div>📊</div>Stats</div>
+    <div class="nav-item" data-page="shop"><div>🛒</div>Shop</div>
+    <div class="nav-item" data-page="profile"><div>👤</div>Profile</div>
+  </nav>
+</div>
+
+<script>
+const splash=document.getElementById("splash");
+const app=document.getElementById("app");
+const ring=document.getElementById("ring");
+
+setTimeout(()=>{splash.style.display="none";app.style.display="block";},1800);
+
+let xp=+localStorage.getItem("gwa_xp")||0;
+let coins=+localStorage.getItem("gwa_coins")||0;
+let streak=+localStorage.getItem("gwa_streak")||0;
+let name=localStorage.getItem("gwa_name")||"Ayus";
+let lastDate=localStorage.getItem("gwa_date")||"";
+const today=new Date().toDateString();
+
+if(lastDate!==today){
+  document.querySelectorAll(".q").forEach(b=>b.disabled=false);
+}
+
+function update(){
+  const level=Math.min(100,Math.floor(xp/100)+1);
+  let current=xp-(level-1)*100;
+  if(level===100) current=100;
+
+  document.getElementById("xp").textContent=xp;
+  document.getElementById("coins").textContent=coins;
+  document.getElementById("streak").textContent=streak;
+  document.getElementById("progressText").textContent=current;
+  document.getElementById("levelText").textContent=level;
+  document.getElementById("profileLevel").textContent=level;
+  document.getElementById("profileXP").textContent=xp;
+  document.getElementById("profileCoins").textContent=coins;
+  document.getElementById("nameShow").textContent=name;
+  document.getElementById("avatar").textContent=name.charAt(0).toUpperCase();
+
+  ring.style.strokeDashoffset=440-(440*current/100);
+
+  localStorage.setItem("gwa_xp",xp);
+  localStorage.setItem("gwa_coins",coins);
+  localStorage.setItem("gwa_streak",streak);
+  localStorage.setItem("gwa_name",name);
+  localStorage.setItem("gwa_date",lastDate);
+
+  drawCalendar();
+  drawGraph();
+}
+
+document.querySelectorAll(".q").forEach(btn=>{
+  btn.onclick=()=>{
+    if(btn.disabled)return;
+    const oldLevel=Math.floor(xp/100)+1;
+
+    xp+=+btn.dataset.xp;
+    coins+=+btn.dataset.coins;
+    btn.disabled=true;
+
+    if(document.querySelectorAll(".q:disabled").length===4 && lastDate!==today){
+      streak++;
+      lastDate=today;
+      alert("🔥 Daily Streak Increased!");
+    }
+
+    update();
+
+    const newLevel=Math.floor(xp/100)+1;
+    if(newLevel>oldLevel && newLevel<=100){
+      alert("🎉 LEVEL UP! Level "+newLevel);
+    }
+  };
+});
+
+function drawCalendar(){
+  const cal=document.getElementById("calendar");
+  cal.innerHTML="";
+  ["M","T","W","T","F","S","S"].forEach((d,i)=>{
+    const div=document.createElement("div");
+    div.className="day"+(i<Math.min(streak,7)?" done":"");
+    div.textContent=d;
+    cal.appendChild(div);
+  });
+}
+
+function drawGraph(){
+  const c=document.getElementById("graph");
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--g");
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<7;i++){
+    const x=20+i*45;
+    const y=120-((xp+i*9)%100);
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function buy(cost,color){
+  if(coins<cost){alert("❌ Not enough coins!");return;}
+  coins-=cost;
+  theme(color);
+  update();
+}
+
+function saveName(){
+  const val=document.getElementById("nameInput").value.trim();
+  if(val){name=val;update();}
+}
+
+function theme(color){
+  document.documentElement.style.setProperty("--g",color);
+  ring.setAttribute("stroke",color);
+}
+
+document.querySelectorAll(".nav-item").forEach(item=>{
+  item.onclick=()=>{
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(item.dataset.page).classList.add("active");
+    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+    item.classList.add("active");
+  };
+});
+
+update();
+</script>
+
+</body>
+</html>
